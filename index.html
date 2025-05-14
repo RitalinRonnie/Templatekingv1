@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ICT Servicedesk Generator</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1e40af;
+      --background: #f9fafb;
+      --foreground: #111827;
+      --border: #e5e7eb;
+      --radius: 0.5rem;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: 2rem;
+      max-width: 720px;
+      margin-inline: auto;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+      text-align: center;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    textarea {
+      height: 200px;
+      resize: vertical;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <h1>ICT Servicedesk Generator</h1>
+  <input type="text" id="userName" placeholder="Naam gebruiker (bv. Jan Jansen)" />
+  <input type="text" id="staffName" placeholder="Jouw naam (bv. Lisa van ICT)" />
+  <select id="scenarioSelect"></select>
+  <div class="button-group">
+    <button onclick="genereerAntwoord()">Genereer e-mail</button>
+    <button onclick="kopieerAntwoord()">Kopieer naar klembord</button>
+  </div>
+  <textarea id="emailOutput" readonly placeholder="Het gegenereerde antwoord verschijnt hier..."></textarea>
+
+  <footer>
+    © 2025 ICT Servicedesk Tool
+  </footer>
+
+  <script>
+    const scenarioData = {
+      wachtwoord: "Uw wachtwoord is gereset. U ontvangt een tijdelijke inlogcode.",
+      printer: "Het printerprobleem is gemeld. U wordt geïnformeerd zodra het is opgelost.",
+      software: "De software-installatie wordt vandaag nog uitgevoerd, mits uw systeem bereikbaar is.",
+      toegang: "Wij controleren uw toegangsrechten en koppelen spoedig terug.",
+      hardware: "Uw hardware-aanvraag is ontvangen en wordt beoordeeld binnen 2 werkdagen.",
+      email: "Uw e-mailprobleem is in onderzoek. U ontvangt spoedig een update.",
+      netwerk: "We controleren uw netwerkverbinding. U wordt geïnformeerd bij oplossing.",
+      inloggen: "Uw inlogproblemen zijn in behandeling. Indien nodig resetten wij uw account.",
+      teams: "Teams-instellingen worden gecontroleerd. Mogelijke storing wordt onderzocht.",
+      telefonie: "Telefonie/VoIP-storing wordt nagekeken. We houden u op de hoogte.",
+      update: "Een software-update wordt binnenkort uitgerold. Houd uw apparaat aangesloten.",
+      ticket: "De status van uw ticket wordt nagekeken. U krijgt spoedig een terugkoppeling.",
+      afspraak: "Laat ons weten welke momenten voor u uitkomen. Wij plannen een afspraak in.",
+      afmelden: "Uw verzoek tot afmelding is ontvangen. Toegang wordt beëindigd op de afgesproken datum.",
+      onboarding: "Uw aanvraag voor een nieuw account is ontvangen. Alles staat klaar voor de startdatum."
+    };
+
+    const scenarioSelect = document.getElementById("scenarioSelect");
+    for (const key in scenarioData) {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = key.charAt(0).toUpperCase() + key.slice(1).replace("_", " ");
+      scenarioSelect.appendChild(option);
+    }
+
+    function genereerAntwoord() {
+      const scenario = scenarioSelect.value;
+      const userName = document.getElementById("userName").value || "gebruiker";
+      const staffName = document.getElementById("staffName").value || "";
+      const output = document.getElementById("emailOutput");
+      if (!scenarioData[scenario]) {
+        output.value = "Kies een geldig scenario.";
+        return;
+      }
+      output.value = `Beste ${userName},\n\n${scenarioData[scenario]}\n\nMet vriendelijke groet,\n\nICT Servicedesk\n${staffName}`;
+    }
+
+    function kopieerAntwoord() {
+      const output = document.getElementById("emailOutput");
+      output.select();
+      document.execCommand("copy");
+      alert("E-mail gekopieerd!");
+    }
+  </script>
+</body>
+</html>
