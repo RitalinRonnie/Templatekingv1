@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ICT Servicedesk Generator</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
+  <link rel="icon" href="icon-192.png" />
+  <style>
+    body { font-family: "Segoe UI", sans-serif; margin: 0; background-color: #f9fafb; color: #111827; }
+    header { background-color: #2563eb; color: white; padding: 1rem; text-align: center; }
+    nav { display: flex; background-color: #e5e7eb; }
+    nav button { flex: 1; padding: 1rem; border: none; background-color: #e5e7eb; font-size: 1rem; cursor: pointer; }
+    nav button.active { background-color: #ffffff; border-bottom: 3px solid #2563eb; font-weight: bold; }
+    .tab-content { padding: 2rem; display: none; }
+    .tab-content.active { display: block; }
+    input, select, textarea, button {
+      width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+      border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;
+    }
+    button.primary { background-color: #2563eb; color: white; border: none; }
+    button.primary:hover { background-color: #1e40af; }
+    .scenario-list { border-top: 1px solid #ccc; margin-top: 1rem; padding-top: 1rem; }
+  </style>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
+  </script>
+</head>
+<body>
+  <header><h1>ICT Servicedesk Generator</h1></header>
+  <nav>
+    <button class="active" onclick="openTab('generate')">E-mail genereren</button>
+    <button onclick="openTab('manage')">Scenario's beheren</button>
+  </nav>
+  <div id="generate" class="tab-content active">
+    <input type="text" id="userName" placeholder="Naam gebruiker" />
+    <input type="text" id="staffName" placeholder="Jouw naam" />
+    <select id="scenarioSelect"></select>
+    <button class="primary" onclick="genereerAntwoord()">Genereer e-mail</button>
+    <button onclick="kopieerAntwoord()">Kopieer naar klembord</button>
+    <textarea id="emailOutput" readonly placeholder="Gegenereerde e-mail verschijnt hier..."></textarea>
+  </div>
+  <div id="manage" class="tab-content">
+    <h2>Scenario toevoegen</h2>
+    <input type="text" id="newKey" placeholder="Unieke code (bijv. wachtwoord)" />
+    <input type="text" id="newTitel" placeholder="Naam in dropdown" />
+    <textarea id="newAntwoord" placeholder="Antwoordtekst..."></textarea>
+    <button class="primary" onclick="voegScenarioToe()">Voeg scenario toe</button>
+    <div class="scenario-list" id="scenarioList"></div>
+  </div>
+  <script>
+    let scenarioData = JSON.parse(localStorage.getItem("scenarioData")) || {
+      wachtwoord: { titel: "Wachtwoord reset", antwoord: "Uw verzoek tot het resetten van uw wachtwoord is ontvangen. Wij hebben dit voor u gereset en u ontvangt spoedig een tijdelijke inlogcode." }
+    };
+    function openTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+      if (tab === 'manage') toonScenarioLijst();
+    }
+    function updateDropdown() {
+      const select = document.getElementById("scenarioSelect");
+      select.innerHTML = "<option value=''>-- Kies een scenario --</option>";
+      for (let key in scenarioData) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = scenarioData[key].titel;
+        select.appendChild(option);
+      }
+    }
+    function genereerAntwoord() {
+      const scenario = document.getElementById("scenarioSelect").value;
+      const userName = document.getElementById("userName").value || "gebruiker";
+      const staffName = document.getElementById("staffName").value || "";
+      const output = document.getElementById("emailOutput");
+      if (!scenarioData[scenario]) {
+        output.value = "Kies een geldig scenario.";
+        return;
+      }
+      output.value = `Beste ${userName},\n\n${scenarioData[scenario].antwoord}\n\nMet vriendelijke groet,\n\nICT Servicedesk\n${staffName}`;
+    }
+    function kopieerAntwoord() {
+      const output = document.getElementById("emailOutput");
+      output.select();
+      document.execCommand("copy");
+      alert("E-mail gekopieerd!");
+    }
+    function voegScenarioToe() {
+      const key = document.getElementById("newKey").value.trim();
+      const titel = document.getElementById("newTitel").value.trim();
+      const antwoord = document.getElementById("newAntwoord").value.trim();
+      if (!key || !titel || !antwoord) {
+        alert("Vul alle velden in.");
+        return;
+      }
+      if (scenarioData[key]) {
+        alert("Deze sleutel bestaat al.");
+        return;
+      }
+      scenarioData[key] = { titel, antwoord };
+      localStorage.setItem("scenarioData", JSON.stringify(scenarioData));
+      document.getElementById("newKey").value = "";
+      document.getElementById("newTitel").value = "";
+      document.getElementById("newAntwoord").value = "";
+      updateDropdown();
+      toonScenarioLijst();
+    }
+    function toonScenarioLijst() {
+      const lijst = document.getElementById("scenarioList");
+      lijst.innerHTML = "";
+      for (let key in scenarioData) {
+        const div = document.createElement("div");
+        div.innerHTML = `<b>${scenarioData[key].titel}</b><br><i>${scenarioData[key].antwoord}</i><br><hr>`;
+        lijst.appendChild(div);
+      }
+    }
+    updateDropdown();
+  </script>
+</body>
+</html>
